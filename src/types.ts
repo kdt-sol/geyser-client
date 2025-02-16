@@ -6,6 +6,8 @@ export type SubscriptionStream = ClientDuplexStream<SubscribeRequest, SubscribeU
 
 export type GeyserSubscribeRequest = SubscribeRequest
 
+export type GeyserSubscribeUpdate = SubscribeUpdate
+
 export type GeyserMethods = {
     [K in keyof SubscribeRequest]: SubscribeRequest[K] extends Record<string, AnyObject> ? K : never
 }

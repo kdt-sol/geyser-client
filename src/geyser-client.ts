@@ -1,11 +1,10 @@
-import { type AnyObject, isKeyOf, isObject, resolveNestedOptions } from '@kdt310722/utils/object'
+import { resolveNestedOptions } from '@kdt310722/utils/object'
 import { Emitter } from '@kdt310722/utils/event'
 import { type DeferredPromise, createDeferred, sleep, withTimeout } from '@kdt310722/utils/promise'
 import { transform } from '@kdt310722/utils/function'
 import { notNullish } from '@kdt310722/utils/common'
-import { isArray } from '@kdt310722/utils/array'
 import type Client from '@triton-one/yellowstone-grpc'
-import type { GeyserMethod, GeyserMethodParams, GeyserSubscribeRequest, GeyserSubscription, SubscriptionStream } from './types'
+import type { GeyserMethod, GeyserMethodParams, GeyserSubscribeRequest, GeyserSubscribeUpdate, GeyserSubscription, SubscriptionStream } from './types'
 import { buildSubscribeRequest, createClient, ping, send } from './utils'
 
 export interface GeyserSubscribeOptions {
@@ -56,7 +55,7 @@ export type GeyserClientEvents = {
     ping: (id: number) => void
     pong: (id: number) => void
     error: (error: unknown) => void
-    data: (subscriptionId: string, data: unknown, context: GeyserDataContext) => void
+    data: (subscriptionId: string, data: GeyserSubscribeUpdate, context: GeyserDataContext) => void
     unhandledMessage: (message: unknown) => void
     updated: (request: GeyserSubscribeRequest) => void
 }
@@ -204,27 +203,21 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
         })
     }
 
-    protected handleData(stream: SubscriptionStream, data: unknown, receivedAt: number) {
+    protected handleData(stream: SubscriptionStream, data: GeyserSubscribeUpdate, receivedAt: number) {
         this.resolveHeartbeat()
 
-        if (isObject(data) && isKeyOf(data, 'filters')) {
-            if (notNullish(data.pong)) {
-                return this.emit('pong', data.pong.id)
-            }
-
-            if (notNullish(data.ping)) {
-                return this.update().catch((error) => stream.destroy(new Error('Pong failed', { cause: error })))
-            }
-
-            if (isArray(data.filters)) {
-                return this.handleSubscription(data, receivedAt)
-            }
+        if (notNullish(data.pong)) {
+            return this.emit('pong', data.pong.id)
         }
 
-        return this.emit('unhandledMessage', data)
+        if (notNullish(data.ping)) {
+            return this.update().catch((error) => stream.destroy(new Error('Pong failed', { cause: error })))
+        }
+
+        return this.handleSubscription(data, receivedAt)
     }
 
-    protected handleSubscription(data: AnyObject, receivedAt: number) {
+    protected handleSubscription(data: GeyserSubscribeUpdate, receivedAt: number) {
         for (const filter of data.filters) {
             if (this.subscriptions.has(filter)) {
                 this.emit('data', filter, data, { receivedAt })
