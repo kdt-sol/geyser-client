@@ -61,6 +61,8 @@ export type GeyserClientEvents = {
 }
 
 export class GeyserClient extends Emitter<GeyserClientEvents, true> {
+    public isConnected = false
+
     protected readonly client: Client
     protected readonly subscriptions = new Map<string, GeyserSubscription>()
 
@@ -99,10 +101,6 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
         this.disconnectOnErrors = disconnectOnErrors
         this.resetPingId = resetPingId
         this.abortController = new AbortController()
-    }
-
-    public get isConnected() {
-        return this.stream?.readable ?? false
     }
 
     public get subscriptionsCount() {
@@ -329,7 +327,7 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
             stream.destroy(error)
         })
 
-        return withTimeout(promise, this.timeout.connect, 'Connect timeout').then(() => this.handleOpen(stream, isReconnect)).then(() => stream)
+        return withTimeout(promise, this.timeout.connect, 'Connect timeout').then(() => this.handleOpen(stream, isReconnect)).then(() => (this.isConnected = true)).then(() => stream)
     }
 
     protected startHeartbeat(stream: SubscriptionStream) {
@@ -367,6 +365,7 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
     }
 
     protected reset() {
+        this.isConnected = false
         this.stream?.removeAllListeners()
         this.stream = undefined
         this.isExplicitlyDisconnected = false
