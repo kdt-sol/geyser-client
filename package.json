@@ -1,0 +1,89 @@
+{
+    "name": "@kdt-sol/geyser-client",
+    "type": "module",
+    "version": "0.0.0",
+    "packageManager": "pnpm@10.4.0",
+    "description": "Solana Yellowstone Geyser client",
+    "author": "Diep Dang <kdt310722@gmail.com>",
+    "license": "MIT",
+    "homepage": "https://github.com/kdt-sol/geyser-client",
+    "repository": "github:kdt-sol/geyser-client",
+    "bugs": {
+        "email": "kdt310722@gmail.com",
+        "url": "https://github.com/kdt-sol/geyser-client/issues"
+    },
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
+    "main": "dist/index.js",
+    "types": "dist/types/index.d.ts",
+    "files": [
+        "dist",
+        "src"
+    ],
+    "engines": {
+        "node": ">=20.12.0"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "build": "rimraf dist && tsup && tsc --project ./tsconfig.build.json",
+        "release": "tsx scripts/release.ts && changelogen gh release && pnpm publish",
+        "up": "ncu -i -x @triton-one/yellowstone-grpc",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "preinstall": "npx only-allow pnpm",
+        "prepare": "simple-git-hooks",
+        "prepublishOnly": "pnpm build"
+    },
+    "dependencies": {
+        "@grpc/grpc-js": "^1.12.6",
+        "@kdt310722/utils": "^0.0.16",
+        "@triton-one/yellowstone-grpc": "^1.4.1"
+    },
+    "devDependencies": {
+        "@commitlint/cli": "^19.7.1",
+        "@commitlint/config-conventional": "^19.7.1",
+        "@kdt310722/eslint-config": "^0.1.9",
+        "@kdt310722/tsconfig": "^1.0.0",
+        "@swc/core": "^1.10.16",
+        "@types/node": "^22.13.4",
+        "changelogen": "^0.5.7",
+        "eslint": "^9.20.1",
+        "execa": "^9.5.2",
+        "lint-staged": "^15.4.3",
+        "npm-check-updates": "^17.1.14",
+        "only-allow": "^1.2.1",
+        "rimraf": "^6.0.1",
+        "simple-git-hooks": "^2.11.1",
+        "tsup": "^8.3.6",
+        "tsx": "^4.19.2",
+        "typescript": "^5.7.3",
+        "zod": "^3.24.2"
+    },
+    "commitlint": {
+        "extends": "@commitlint/config-conventional"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "@kdt310722/eslint-config",
+            "@swc/core",
+            "esbuild",
+            "protobufjs",
+            "simple-git-hooks"
+        ]
+    },
+    "simple-git-hooks": {
+        "commit-msg": "npx --no -- commitlint --edit ${1}",
+        "pre-commit": "npx lint-staged"
+    },
+    "lint-staged": {
+        "*": "eslint --fix"
+    }
+}
