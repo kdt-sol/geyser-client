@@ -262,6 +262,10 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
     }
 
     protected handleClose(emit = true) {
+        if (!this.isConnected) {
+            return
+        }
+
         const isExplicitly = this.isExplicitlyDisconnected
         const subscriptions = Object.fromEntries(this.subscriptions)
 
