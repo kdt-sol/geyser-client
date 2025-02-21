@@ -252,8 +252,8 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
         }
     }
 
-    protected handleClose(emit = true) {
-        if (!this.isConnected) {
+    protected handleClose(emit = true, reconnect = false, checkIsConnected = true) {
+        if (checkIsConnected && !this.isConnected) {
             return
         }
 
@@ -266,10 +266,10 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
             this.emit('disconnected', isExplicitly, subscriptions)
         }
 
-        if (isExplicitly) {
-            this.subscriptions.clear()
-        } else {
+        if (!isExplicitly || reconnect) {
             this.handleReconnect()
+        } else {
+            this.subscriptions.clear()
         }
     }
 
@@ -279,7 +279,7 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
 
             sleep(this.reconnect.delay).then(async () => this.connect(true)).catch((error) => {
                 this.emit('reconnectFailed', error)
-                this.handleClose(false)
+                this.handleClose(false, true, false)
             })
         }
     }
