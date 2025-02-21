@@ -1,9 +1,10 @@
 import { resolveNestedOptions } from '@kdt310722/utils/object'
 import { Emitter } from '@kdt310722/utils/event'
-import { type DeferredPromise, createDeferred, sleep, withTimeout } from '@kdt310722/utils/promise'
+import { type DeferredPromise, createDeferred, withRetry, withTimeout } from '@kdt310722/utils/promise'
 import { transform } from '@kdt310722/utils/function'
 import { notNullish } from '@kdt310722/utils/common'
 import type Client from '@triton-one/yellowstone-grpc'
+import { isNumber } from '@kdt310722/utils/number'
 import type { GeyserMethod, GeyserMethodParams, GeyserSubscribeRequest, GeyserSubscribeUpdate, GeyserSubscription, SubscriptionStream } from './types'
 import { buildSubscribeRequest, createClient, ping, send } from './utils'
 
@@ -47,6 +48,7 @@ export interface GeyserDataContext {
 export type GeyserClientEvents = {
     connect: () => void
     reconnect: (attempt: number, retriesLeft: number) => void
+    reconnectError: (error: unknown) => void
     reconnectFailed: (error: unknown) => void
     connected: () => void
     disconnected: (isExplicitly: boolean, subscriptions: Record<string, GeyserSubscription>) => void
@@ -62,6 +64,7 @@ export type GeyserClientEvents = {
 
 export class GeyserClient extends Emitter<GeyserClientEvents, true> {
     public isConnected = false
+    public isReconnecting = false
 
     protected readonly client: Client
     protected readonly subscriptions = new Map<string, GeyserSubscription>()
@@ -252,8 +255,8 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
         }
     }
 
-    protected handleClose(emit = true, reconnect = false, checkIsConnected = true) {
-        if (checkIsConnected && !this.isConnected) {
+    protected handleClose() {
+        if (!this.isConnected || this.isReconnecting) {
             return
         }
 
@@ -261,25 +264,31 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
         const subscriptions = Object.fromEntries(this.subscriptions)
 
         this.reset()
+        this.emit('disconnected', isExplicitly, subscriptions)
 
-        if (emit) {
-            this.emit('disconnected', isExplicitly, subscriptions)
-        }
-
-        if (!isExplicitly || reconnect) {
-            this.handleReconnect()
-        } else {
+        if (isExplicitly) {
             this.subscriptions.clear()
+        } else {
+            this.handleReconnect()
         }
     }
 
     protected handleReconnect() {
-        if (this.reconnect.enabled && this.reconnectAttempts < this.reconnect.maxAttempts) {
+        if (!this.isReconnecting && this.reconnect.enabled && this.reconnectAttempts < this.reconnect.maxAttempts) {
+            this.isReconnecting = true
             this.emit('reconnect', ++this.reconnectAttempts, this.reconnect.maxAttempts - this.reconnectAttempts)
 
-            sleep(this.reconnect.delay).then(async () => this.connect(true)).catch((error) => {
-                this.emit('reconnectFailed', error)
-                this.handleClose(false, true, false)
+            const reconnect = async () => withRetry(async () => this.connect(true), {
+                retries: this.reconnect.maxAttempts - 2,
+                delay: this.reconnect.delay,
+                onFailedAttempt: (error) => {
+                    this.emit('reconnectError', this.formatReconnectError(error))
+                    this.emit('reconnect', this.reconnectAttempts = error.attemptNumber, error.retriesLeft)
+                },
+            })
+
+            reconnect().catch((error) => this.emit('reconnectFailed', this.formatReconnectError(error))).finally(() => {
+                this.isReconnecting = false
             })
         }
     }
@@ -301,8 +310,7 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
             throw new Error('Already connected')
         }
 
-        this.stream = undefined
-        this.isExplicitlyDisconnected = false
+        this.reset()
 
         const promise = createDeferred<unknown>()
         const stream = await this.client.subscribe()
@@ -373,5 +381,13 @@ export class GeyserClient extends Emitter<GeyserClientEvents, true> {
         this.abortController.abort()
         this.abortController = new AbortController()
         this.pingId = 0
+    }
+
+    protected formatReconnectError(error: unknown) {
+        if (error instanceof Error && 'attemptNumber' in error && isNumber(error.attemptNumber)) {
+            error.attemptNumber += 1
+        }
+
+        return error
     }
 }
