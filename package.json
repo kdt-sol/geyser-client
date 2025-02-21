@@ -1,7 +1,7 @@
 {
     "name": "@kdt-sol/geyser-client",
     "type": "module",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "packageManager": "pnpm@10.4.1",
     "description": "Solana Yellowstone Geyser client",
     "author": "Diep Dang <kdt310722@gmail.com>",
