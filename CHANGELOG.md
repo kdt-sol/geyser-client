@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v0.0.5
+
+[compare changes](https://github.com/kdt-sol/geyser-client/compare/v0.0.4...v0.0.5)
+
+### 🚀 Enhancements
+
+- Export from triton grpc package ([670f49e](https://github.com/kdt-sol/geyser-client/commit/670f49e))
+
+### 🏡 Chore
+
+- Update deps ([db229dc](https://github.com/kdt-sol/geyser-client/commit/db229dc))
+
+### ❤️ Contributors
+
+- Diep Dang <kdt310722@gmail.com>
+
 ## v0.0.4
 
 [compare changes](https://github.com/kdt-sol/geyser-client/compare/v0.0.3...v0.0.4)
