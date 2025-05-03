@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v0.0.6
+
+[compare changes](https://github.com/kdt-sol/geyser-client/compare/v0.0.5...v0.0.6)
+
+### 🏡 Chore
+
+- Update deps ([6405e41](https://github.com/kdt-sol/geyser-client/commit/6405e41))
+
+### ❤️ Contributors
+
+- DiepPk <kdt310722@gmail.com>
+
 ## v0.0.5
 
 [compare changes](https://github.com/kdt-sol/geyser-client/compare/v0.0.4...v0.0.5)
