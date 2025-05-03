@@ -2,7 +2,7 @@
     "name": "@kdt-sol/geyser-client",
     "type": "module",
     "version": "0.0.5",
-    "packageManager": "pnpm@10.5.2",
+    "packageManager": "pnpm@10.10.0",
     "description": "Solana Yellowstone Geyser client",
     "author": "Diep Dang <kdt310722@gmail.com>",
     "license": "MIT",
@@ -43,29 +43,29 @@
         "prepublishOnly": "pnpm build"
     },
     "dependencies": {
-        "@grpc/grpc-js": "^1.12.6",
+        "@grpc/grpc-js": "^1.13.3",
         "@kdt310722/utils": "^0.0.17",
         "@triton-one/yellowstone-grpc": "^1.4.1"
     },
     "devDependencies": {
-        "@commitlint/cli": "^19.7.1",
-        "@commitlint/config-conventional": "^19.7.1",
+        "@commitlint/cli": "^19.8.0",
+        "@commitlint/config-conventional": "^19.8.0",
         "@kdt310722/eslint-config": "^0.1.9",
         "@kdt310722/tsconfig": "^1.0.0",
-        "@swc/core": "^1.11.4",
-        "@types/node": "^22.13.5",
-        "changelogen": "^0.6.0",
-        "eslint": "^9.21.0",
+        "@swc/core": "^1.11.24",
+        "@types/node": "^22.15.3",
+        "changelogen": "^0.6.1",
+        "eslint": "^9.26.0",
         "execa": "^9.5.2",
-        "lint-staged": "^15.4.3",
-        "npm-check-updates": "^17.1.15",
+        "lint-staged": "^15.5.1",
+        "npm-check-updates": "^18.0.1",
         "only-allow": "^1.2.1",
         "rimraf": "^6.0.1",
-        "simple-git-hooks": "^2.11.1",
+        "simple-git-hooks": "^2.13.0",
         "tsup": "^8.4.0",
-        "tsx": "^4.19.3",
-        "typescript": "^5.7.3",
-        "zod": "^3.24.2"
+        "tsx": "^4.19.4",
+        "typescript": "^5.8.3",
+        "zod": "^3.24.3"
     },
     "commitlint": {
         "extends": "@commitlint/config-conventional"
@@ -75,7 +75,12 @@
             "@swc/core",
             "esbuild",
             "protobufjs",
-            "simple-git-hooks"
+            "simple-git-hooks",
+            "unrs-resolver"
+        ],
+        "ignoredBuiltDependencies": [
+            "@kdt310722/eslint-config",
+            "@kdt310722/utils"
         ]
     },
     "simple-git-hooks": {
